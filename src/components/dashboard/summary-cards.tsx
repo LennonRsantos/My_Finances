@@ -82,6 +82,26 @@ function MonthLeftover({ income, expenses }: { income: number; expenses: number 
   )
 }
 
+/** Saldo que sobrou (ou faltou) do mês anterior; pendentes entram só na previsão. */
+function Carried({ real, forecast }: { real: number; forecast: number }) {
+  if (real === 0 && forecast === 0) return null
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-4 py-3.5 sm:px-5">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-sm font-medium">{real < 0 ? 'Faltou do mês anterior' : 'Sobrou do mês anterior'}</span>
+        {forecast !== real && (
+          <span className="text-xs text-muted-foreground">
+            Previsão: {formatMoney(forecast)} com o que falta receber/pagar
+          </span>
+        )}
+      </div>
+      <span className={cn('whitespace-nowrap text-lg font-semibold tabular-nums', real < 0 ? 'text-expense' : real > 0 ? 'text-income' : 'text-muted-foreground')}>
+        {formatMoney(real)}
+      </span>
+    </div>
+  )
+}
+
 /** Resumo do mês: saldo de hoje e previsão do fim do mês lado a lado, movimento embaixo. */
 export function MonthStatement({ summary, toPay }: { summary: MonthSummary; toPay: number }) {
   const { tone } = healthMeta[summary.health]
@@ -104,6 +124,7 @@ export function MonthStatement({ summary, toPay }: { summary: MonthSummary; toPa
           <p className="text-sm text-muted-foreground">{statusText(summary)}</p>
         </div>
       </div>
+      <Carried real={summary.carriedBalance} forecast={summary.carriedForecast} />
       <dl className="grid grid-cols-3 border-t [&>div+div]:border-l">
         <Figure label="Receitas" value={summary.monthIncome} tone="income" sign="+" />
         <Figure label="Despesas" value={summary.monthExpenses} tone="expense" sign="−" />

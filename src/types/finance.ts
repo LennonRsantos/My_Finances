@@ -664,6 +664,10 @@ export interface MonthSummary {
   monthIncome: Cents
   monthExpenses: Cents
   projectedEndBalance: Cents
+  /** Saldo real que veio do mês anterior: só o que foi pago/recebido. */
+  carriedBalance: Cents
+  /** Previsão do saldo vindo do mês anterior, contando também o que está pendente. */
+  carriedForecast: Cents
   health: FinancialHealth
 }
 

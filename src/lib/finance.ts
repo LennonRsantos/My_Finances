@@ -17,7 +17,7 @@ import type {
   TransactionStatus,
   YearMonth,
 } from '@/types/finance'
-import { addDaysISO, addMonthsISO, formatMonthLabel, lastNMonths, monthEnd, monthOf } from './dates'
+import { addDaysISO, addMonthsISO, formatMonthLabel, lastNMonths, monthEnd, monthOf, shiftMonth } from './dates'
 import { splitCents } from './money'
 import { createId } from './utils'
 
@@ -74,6 +74,11 @@ export function computeMonthSummary(
   const end = monthEnd(month)
   const projectedEndBalance = openingBalance + sum(transactions.filter((t) => t.dueDate <= end).map(signed))
 
+  // Saldo que passa do mês anterior para este (agrupado por vencimento, como transactionsInMonth).
+  const before = transactions.filter((t) => t.dueDate <= monthEnd(shiftMonth(month, -1)))
+  const carriedForecast = openingBalance + sum(before.map(signed))
+  const carriedBalance = openingBalance + sum(before.filter((t) => t.status === 'pago').map(signed))
+
   // Atrasos acumulados de meses anteriores também comprometem o mês.
   const overdueCount = transactions.filter((t) => t.dueDate <= end && resolveStatus(t, today) === 'atrasado').length
 
@@ -83,6 +88,8 @@ export function computeMonthSummary(
     monthIncome,
     monthExpenses,
     projectedEndBalance,
+    carriedBalance,
+    carriedForecast,
     health: computeHealth({ projectedEndBalance, monthIncome, monthExpenses, overdueCount }),
   }
 }
